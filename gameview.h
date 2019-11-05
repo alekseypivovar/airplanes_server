@@ -9,9 +9,7 @@
 #include <QRandomGenerator>
 #include "server.h"
 #include "plane.h"
-#define FRAMES_PER_SEC 40
-#define TILE_SIZE 32
-#define PLANE_SPEED 5
+
 
 class GameView : public QGraphicsView
 {
