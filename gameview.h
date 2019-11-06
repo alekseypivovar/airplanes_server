@@ -40,6 +40,9 @@ public slots:
     void updatePlayerParams(PlayerInfo player);
     void sendParamsForAllPlayers();
 
+private slots:
+    void updatePlanePos(Plane* plane);
+
 };
 
 #endif // GAMEVIEW_H

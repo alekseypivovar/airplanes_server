@@ -69,6 +69,7 @@ void GameView::createNewPlayer(QTcpSocket *pClientSocket)
     Plane* plane = new Plane(id, newPlayer.getType(), newPlayer.getAngle(), newPlayer.getSpeed(), newPlayer.getAngleSpeed(), newPlayer.getHealth());
     this->scene()->addItem(plane);
     plane->setPos(pos);
+    connect(plane, SIGNAL(planeMoved(Plane*)), this, SLOT(updatePlanePos(Plane*)));
 
     idAndMap id_map;
     id_map.id  = id;
@@ -89,9 +90,14 @@ void GameView::updatePlayerParams(PlayerInfo player)
 void GameView::sendParamsForAllPlayers()
 {
     for (int i = 0; i < players_SERVER.length(); i++) {
-        if (players_SERVER.at(i).socket) {           // ПРОВЕРИТЬ УСЛОВИЕ ПРИ УДАЛЕНИИ ИГРОКОВ +++++++++++++++++++++
+        if (players_SERVER.at(i).isEnabled) {           // ПРОВЕРИТЬ УСЛОВИЕ ПРИ УДАЛЕНИИ ИГРОКОВ +++++++++++++++++++++
             server->sendCoordsToClient(players_SERVER.at(i).socket, players);
         }
     }
+}
+
+void GameView::updatePlanePos(Plane *plane)
+{
+    players[plane->getId()].setPos(plane->scenePos());
 }
 
