@@ -39,7 +39,7 @@ void Server::slotReadClient()
     QDataStream in(pClientSocket);
 
     if (blockSize == 0){
-        if (pClientSocket->bytesAvailable() < sizeof (quint16))
+        if (pClientSocket->bytesAvailable() < int(sizeof (quint32)))
             return;
         in >> blockSize;
     }
@@ -59,9 +59,9 @@ void Server::sendCoordsToClient(QTcpSocket *pSocket, const QVector<PlayerInfo>& 
     QByteArray block;
     QDataStream out (&block, QIODevice::WriteOnly);
 
-    out << quint16(0) << players;
+    out << quint32(0) << players;
     out.device()->seek(0);
-    out << quint16(block.size() - sizeof (quint16));
+    out << quint32(block.size() - sizeof (quint32));
     pSocket->write(block);
 }
 
@@ -70,9 +70,10 @@ void Server::sendIdAndMapToClient(QTcpSocket *pSocket, idAndMap info)
 {
     QByteArray block;
     QDataStream out (&block, QIODevice::WriteOnly);
-    out << quint16(0) << info;
+
+    out << quint32(0) << info;
     out.device()->seek(0);
-    out << quint16(block.size() - sizeof (quint16));
+    out << quint32(block.size() - sizeof (quint32));
     pSocket->write(block);
 }
 

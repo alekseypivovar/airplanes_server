@@ -28,6 +28,7 @@ private:
     QVector <QString> map;
     QVector <PlayerInfo> players;
     QVector <PlayerInfo_SERVER> players_SERVER;
+    QVector <Plane*> planes;
     QTimer* updateParamsTimer;
     QTimer* animationTimer;
 

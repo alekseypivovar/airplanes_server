@@ -27,7 +27,7 @@ GameView::GameView(Server* server, QVector <QString> map, QWidget* parent) : QGr
 void GameView::drawMap() const
 {
     // Устанавливаем размер сцены на весь мир
-    this->scene()->setSceneRect(0,0, map.at(0).length() * TILE_SIZE, map.length() * TILE_SIZE);
+    this->scene()->setSceneRect(0,0, (map.at(0).length() - 1) * TILE_SIZE, map.length() * TILE_SIZE);
 
     // Перебор и расстановка тайлов. j - номер тайла по оси Х, i - номер по оси Y
     for (int i = 0; i < map.length(); i++) {
@@ -51,6 +51,7 @@ QPointF GameView::getRandomPos() const
     quint32 x = QRandomGenerator::global()->bounded(quint32(scene()->width()  * 0.8)) + quint32(scene()->width()  * 0.1);
     quint32 y = QRandomGenerator::global()->bounded(quint32(scene()->height() * 0.8)) + quint32(scene()->height() * 0.1);
     return QPointF(x, y);
+    //return QPointF(200, 200);
 }
 
 void GameView::createNewPlayer(QTcpSocket *pClientSocket)
@@ -68,6 +69,7 @@ void GameView::createNewPlayer(QTcpSocket *pClientSocket)
 
     Plane* plane = new Plane(id, newPlayer.getType(), newPlayer.getAngle(), newPlayer.getSpeed(), newPlayer.getAngleSpeed(), newPlayer.getHealth());
     this->scene()->addItem(plane);
+    planes << plane;
     plane->setPos(pos);
     connect(plane, SIGNAL(planeMoved(Plane*)), this, SLOT(updatePlanePos(Plane*)));
 
@@ -75,7 +77,7 @@ void GameView::createNewPlayer(QTcpSocket *pClientSocket)
     id_map.id  = id;
     id_map.map = map;
     server->sendIdAndMapToClient(pClientSocket, id_map);
-    sendParamsForAllPlayers();
+//    sendParamsForAllPlayers();
 }
 
 void GameView::updatePlayerParams(PlayerInfo player)
@@ -83,6 +85,8 @@ void GameView::updatePlayerParams(PlayerInfo player)
     qint32 number = player.getId();
     players[number].setSpeed(player.getSpeed());
     players[number].setAngleSpeed(player.getAngleSpeed());
+    planes [number]->setSpeed(player.getSpeed());
+    planes [number]->setAngleSpeed(player.getAngleSpeed());
 
     sendParamsForAllPlayers();
 }
@@ -98,6 +102,6 @@ void GameView::sendParamsForAllPlayers()
 
 void GameView::updatePlanePos(Plane *plane)
 {
-    players[plane->getId()].setPos(plane->scenePos());
+    players[plane->getId()]. setPos(plane->scenePos());
 }
 

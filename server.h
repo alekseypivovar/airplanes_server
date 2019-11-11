@@ -14,7 +14,7 @@ class Server : public QTcpServer
     Q_OBJECT
 private:
     QTcpServer* m_ptcpServer;
-    quint16 blockSize;
+    quint32 blockSize;
 
 public:
     Server(int port, QWidget *parent = nullptr);
