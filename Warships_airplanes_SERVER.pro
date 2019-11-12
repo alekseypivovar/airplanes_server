@@ -48,9 +48,17 @@ RESOURCES += \
 
 
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-Warships_airplanes_DLL-Desktop_Qt_5_13_0_MinGW_64_bit-Debug/release/ -lWarships_airplanes_DLL
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-Warships_airplanes_DLL-Desktop_Qt_5_13_0_MinGW_64_bit-Debug/debug/ -lWarships_airplanes_DLL
-else:unix: LIBS += -L$$PWD/../build-Warships_airplanes_DLL-Desktop_Qt_5_13_0_MinGW_64_bit-Debug/ -lWarships_airplanes_DLL
 
-INCLUDEPATH += $$PWD/../Warships_airplanes_DLL
-DEPENDPATH += $$PWD/../Warships_airplanes_DLL
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-Warships_airplanes_DLL-Desktop_Qt_5_12_5_MinGW_32_bit-Debug/release/ -lWarships_airplanes_DLL
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-Warships_airplanes_DLL-Desktop_Qt_5_12_5_MinGW_32_bit-Debug/debug/ -lWarships_airplanes_DLL
+else:unix: LIBS += -L$$PWD/../build-Warships_airplanes_DLL-Desktop_Qt_5_12_5_MinGW_32_bit-Debug/ -lWarships_airplanes_DLL
+
+INCLUDEPATH += $$PWD/../airplanes_lib
+DEPENDPATH += $$PWD/../airplanes_lib
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-Warships_airplanes_DLL-Desktop_Qt_5_12_5_MinGW_32_bit-Release/release/ -lWarships_airplanes_DLL
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-Warships_airplanes_DLL-Desktop_Qt_5_12_5_MinGW_32_bit-Release/debug/ -lWarships_airplanes_DLL
+else:unix: LIBS += -L$$PWD/../build-Warships_airplanes_DLL-Desktop_Qt_5_12_5_MinGW_32_bit-Release/ -lWarships_airplanes_DLL
+
+INCLUDEPATH += $$PWD/../airplanes_lib
+DEPENDPATH += $$PWD/../airplanes_lib

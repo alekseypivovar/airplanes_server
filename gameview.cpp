@@ -14,7 +14,7 @@ GameView::GameView(Server* server, QVector <QString> map, QWidget* parent) : QGr
 
 
     updateParamsTimer = new QTimer;
-    updateParamsTimer->start(100);
+    updateParamsTimer->start(250);
     if (scene != nullptr)
         connect(updateParamsTimer, SIGNAL(timeout()), this, SLOT(sendParamsForAllPlayers()));
 
@@ -51,12 +51,11 @@ QPointF GameView::getRandomPos() const
     quint32 x = QRandomGenerator::global()->bounded(quint32(scene()->width()  * 0.8)) + quint32(scene()->width()  * 0.1);
     quint32 y = QRandomGenerator::global()->bounded(quint32(scene()->height() * 0.8)) + quint32(scene()->height() * 0.1);
     return QPointF(x, y);
-    //return QPointF(200, 200);
 }
 
 void GameView::createNewPlayer(QTcpSocket *pClientSocket)
 {
-    qint32 id = players.length();
+    qint16 id = qint16(players.length());
     QPointF pos = getRandomPos();
     PlayerInfo newPlayer(id, pos, 90, PlayerInfo::PLANE, PLANE_SPEED, 0, 5);
     PlayerInfo_SERVER newPlayer_SERVER;
