@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QDebug>
 #include <QNetworkInterface>
+#include <QThread>
 #include "server.h"
 #include "gameview.h"
 

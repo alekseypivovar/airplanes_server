@@ -10,11 +10,11 @@ GameView::GameView(Server* server, QVector <QString> map, QWidget* parent) : QGr
     drawMap();
 
     connect(server, SIGNAL(newPlayerConnected(QTcpSocket*)), this, SLOT(createNewPlayer(QTcpSocket*)));
-    connect(server, SIGNAL(playerParamsChanged(PlayerInfo)), this, SLOT(updatePlayerParams(PlayerInfo)));
+    connect(server, SIGNAL(playerParamsChanged(PlayerInfo&)), this, SLOT(updatePlayerParams(PlayerInfo&)));
 
 
     updateParamsTimer = new QTimer;
-    updateParamsTimer->start(250);
+    updateParamsTimer->start(1000);
     if (scene != nullptr)
         connect(updateParamsTimer, SIGNAL(timeout()), this, SLOT(sendParamsForAllPlayers()));
 
@@ -79,7 +79,7 @@ void GameView::createNewPlayer(QTcpSocket *pClientSocket)
 //    sendParamsForAllPlayers();
 }
 
-void GameView::updatePlayerParams(PlayerInfo player)
+void GameView::updatePlayerParams(PlayerInfo& player)
 {
     qint32 number = player.getId();
     players[number].setSpeed(player.getSpeed());

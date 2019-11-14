@@ -14,14 +14,15 @@ class Server : public QTcpServer
     Q_OBJECT
 private:
     QTcpServer* m_ptcpServer;
-    quint32 blockSize;
+    quint32 blockSize_map;
+    quint16 blockSize;
 
 public:
     Server(int port, QWidget *parent = nullptr);
     ~Server();
 
     void sendCoordsToClient(QTcpSocket* pSocket, const QVector<PlayerInfo>& players);
-    void sendIdAndMapToClient(QTcpSocket* pSocket, idAndMap info);
+    void sendIdAndMapToClient(QTcpSocket* pSocket, idAndMap& info);
 
 private slots:
     void slotReadClient();
@@ -29,7 +30,7 @@ private slots:
 
 signals:
     void newPlayerConnected(QTcpSocket* pClientSocket);
-    void playerParamsChanged(PlayerInfo player);
+    void playerParamsChanged(PlayerInfo& player);
 };
 
 #endif // SERVER_H

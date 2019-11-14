@@ -38,7 +38,7 @@ private:
 
 public slots:
     void createNewPlayer(QTcpSocket* pClientSocket);
-    void updatePlayerParams(PlayerInfo player);
+    void updatePlayerParams(PlayerInfo& player);
     void sendParamsForAllPlayers();
 
 private slots:

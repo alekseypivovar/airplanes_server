@@ -3,7 +3,7 @@
 
 
 Server::Server(int port, QWidget *parent)
-    : QTcpServer(parent), blockSize(0)
+    : QTcpServer(parent), blockSize_map(0), blockSize(0)
 {
     m_ptcpServer = new QTcpServer(this);
     if(!m_ptcpServer->listen(QHostAddress::Any, quint16(port))){
@@ -35,11 +35,12 @@ void Server::slotNewConnection(){
 
 void Server::slotReadClient()
 {
+    qDebug() << "Read data...";
     QTcpSocket* pClientSocket = qobject_cast<QTcpSocket*>(sender());
     QDataStream in(pClientSocket);
 
     if (blockSize == 0){
-        if (pClientSocket->bytesAvailable() < int(sizeof (quint32)))
+        if (pClientSocket->bytesAvailable() < int(sizeof (quint16)))
             return;
         in >> blockSize;
     }
@@ -52,6 +53,7 @@ void Server::slotReadClient()
     in >> player;
 
     emit playerParamsChanged(player);
+    qDebug() << "Data RECEIVED!";
 }
 
 void Server::sendCoordsToClient(QTcpSocket *pSocket, const QVector<PlayerInfo>& players)
@@ -59,14 +61,15 @@ void Server::sendCoordsToClient(QTcpSocket *pSocket, const QVector<PlayerInfo>& 
     QByteArray block;
     QDataStream out (&block, QIODevice::WriteOnly);
 
-    out << quint32(0) << players;
+    out << quint16(0) << players;
     out.device()->seek(0);
-    out << quint32(block.size() - sizeof (quint32));
+    out << quint16(block.size() - sizeof (quint16));
     pSocket->write(block);
+    //qDebug() << "Coords SENDED!";
 }
 
 
-void Server::sendIdAndMapToClient(QTcpSocket *pSocket, idAndMap info)
+void Server::sendIdAndMapToClient(QTcpSocket *pSocket, idAndMap& info)
 {
     QByteArray block;
     QDataStream out (&block, QIODevice::WriteOnly);
@@ -75,6 +78,7 @@ void Server::sendIdAndMapToClient(QTcpSocket *pSocket, idAndMap info)
     out.device()->seek(0);
     out << quint32(block.size() - sizeof (quint32));
     pSocket->write(block);
+    qDebug() << "MAP SENDED!";
 }
 
 

@@ -48,7 +48,6 @@ void MainWindow::on_pushButton_clicked()
             qDebug() << "No map!";
             exit (1);
         }
-
         GameView* gameView = new GameView(server, map, this);
     }
     else {
@@ -59,6 +58,9 @@ void MainWindow::on_pushButton_clicked()
 
 bool MainWindow::startServer()
 {
+    QThread* thread = new QThread;
     server = new Server(2323);
+    server->moveToThread(thread);
+    thread->start();
     return true;
 }
