@@ -10,11 +10,14 @@ GameView::GameView(Server* server, QVector <QString> map, QWidget* parent) : QGr
     drawMap();
 
     connect(server, SIGNAL(newPlayerConnected(QTcpSocket*)), this, SLOT(createNewPlayer(QTcpSocket*)));
-    connect(server, SIGNAL(playerParamsChanged(PlayerInfo&)), this, SLOT(updatePlayerParams(PlayerInfo&)));
+    connect(server, SIGNAL(playerParamsChanged(PlayerInfo)), this, SLOT(updatePlayerParams(PlayerInfo)));
 
+    connect(this, SIGNAL(sendIdAndMapToClient(QTcpSocket *, idAndMap)), server, SLOT(sendIdAndMapToClient(QTcpSocket *, idAndMap)));
+    connect(this, SIGNAL(sendCoordsToClient(QTcpSocket *, const QVector<PlayerInfo> )),
+            server, SLOT(sendCoordsToClient(QTcpSocket *, const QVector<PlayerInfo> )));
 
     updateParamsTimer = new QTimer;
-    updateParamsTimer->start(1000);
+    updateParamsTimer->start(2000);
     if (scene != nullptr)
         connect(updateParamsTimer, SIGNAL(timeout()), this, SLOT(sendParamsForAllPlayers()));
 
@@ -57,7 +60,7 @@ void GameView::createNewPlayer(QTcpSocket *pClientSocket)
 {
     qint16 id = qint16(players.length());
     QPointF pos = getRandomPos();
-    PlayerInfo newPlayer(id, pos, 90, PlayerInfo::PLANE, PLANE_SPEED, 0, 5);
+    PlayerInfo newPlayer(id, pos, 45, PlayerInfo::PLANE, PLANE_SPEED, 0, 5);
     PlayerInfo_SERVER newPlayer_SERVER;
     newPlayer_SERVER.id = id;
     newPlayer_SERVER.socket = pClientSocket;
@@ -75,17 +78,19 @@ void GameView::createNewPlayer(QTcpSocket *pClientSocket)
     idAndMap id_map;
     id_map.id  = id;
     id_map.map = map;
-    server->sendIdAndMapToClient(pClientSocket, id_map);
+    emit sendIdAndMapToClient(pClientSocket, id_map);
 //    sendParamsForAllPlayers();
 }
 
-void GameView::updatePlayerParams(PlayerInfo& player)
+void GameView::updatePlayerParams(PlayerInfo player)
 {
     qint32 number = player.getId();
     players[number].setSpeed(player.getSpeed());
     players[number].setAngleSpeed(player.getAngleSpeed());
+//    players[number].setAngle(player.getAngle());
     planes [number]->setSpeed(player.getSpeed());
     planes [number]->setAngleSpeed(player.getAngleSpeed());
+//    planes [number]->setAngle(player.getAngle());
 
     sendParamsForAllPlayers();
 }
@@ -94,7 +99,7 @@ void GameView::sendParamsForAllPlayers()
 {
     for (int i = 0; i < players_SERVER.length(); i++) {
         if (players_SERVER.at(i).isEnabled) {           // ПРОВЕРИТЬ УСЛОВИЕ ПРИ УДАЛЕНИИ ИГРОКОВ +++++++++++++++++++++
-            server->sendCoordsToClient(players_SERVER.at(i).socket, players);
+            emit sendCoordsToClient(players_SERVER.at(i).socket, players);
         }
     }
 }
@@ -102,5 +107,6 @@ void GameView::sendParamsForAllPlayers()
 void GameView::updatePlanePos(Plane *plane)
 {
     players[plane->getId()]. setPos(plane->scenePos());
+    players[plane->getId()].setAngle(plane->getAngle());
 }
 

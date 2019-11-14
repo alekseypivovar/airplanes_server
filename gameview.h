@@ -38,11 +38,15 @@ private:
 
 public slots:
     void createNewPlayer(QTcpSocket* pClientSocket);
-    void updatePlayerParams(PlayerInfo& player);
+    void updatePlayerParams(PlayerInfo player);
     void sendParamsForAllPlayers();
 
 private slots:
     void updatePlanePos(Plane* plane);
+
+signals:
+    void sendIdAndMapToClient(QTcpSocket *pSocket, idAndMap info);
+    void sendCoordsToClient(QTcpSocket *pSocket, const QVector<PlayerInfo> players);
 
 };
 

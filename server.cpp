@@ -56,7 +56,7 @@ void Server::slotReadClient()
     qDebug() << "Data RECEIVED!";
 }
 
-void Server::sendCoordsToClient(QTcpSocket *pSocket, const QVector<PlayerInfo>& players)
+void Server::sendCoordsToClient(QTcpSocket *pSocket, const QVector<PlayerInfo> players)
 {
     QByteArray block;
     QDataStream out (&block, QIODevice::WriteOnly);
@@ -69,7 +69,7 @@ void Server::sendCoordsToClient(QTcpSocket *pSocket, const QVector<PlayerInfo>& 
 }
 
 
-void Server::sendIdAndMapToClient(QTcpSocket *pSocket, idAndMap& info)
+void Server::sendIdAndMapToClient(QTcpSocket *pSocket, idAndMap info)
 {
     QByteArray block;
     QDataStream out (&block, QIODevice::WriteOnly);

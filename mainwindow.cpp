@@ -13,6 +13,10 @@ MainWindow::MainWindow(QWidget *parent) :
         if (address.protocol() == QAbstractSocket::IPv4Protocol && address != localhost)
              ui->label_IP->setText(address.toString());
     }
+
+    qRegisterMetaType<idAndMap>("idAndMap");
+    qRegisterMetaType<PlayerInfo>("PlayerInfo");
+    qRegisterMetaType<QVector<PlayerInfo>>("QVector<PlayerInfo>");
 }
 
 MainWindow::~MainWindow()
@@ -22,7 +26,7 @@ MainWindow::~MainWindow()
 
 QVector<QString> MainWindow::getMap()
 {
-    QFile file(":/map.txt");
+    QFile file(":/map_small.txt");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug() << "Error while opening map file!";
         return QVector<QString>();

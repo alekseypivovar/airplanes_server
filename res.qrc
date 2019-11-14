@@ -3,5 +3,6 @@
         <file>map.txt</file>
         <file>images/plane.png</file>
         <file>images/0.png</file>
+        <file>map_small.txt</file>
     </qresource>
 </RCC>
