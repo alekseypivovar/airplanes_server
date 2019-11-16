@@ -49,11 +49,26 @@ void Server::slotReadClient()
         return;
 
     blockSize = 0;
-    PlayerInfo player;
-    in >> player;
 
-    emit playerParamsChanged(player);
-    qDebug() << "Data RECEIVED!";
+    SendInfoType type;
+    int buffer;
+    in >> buffer;
+    type = SendInfoType(buffer);
+
+    if (type == COORDS) {
+        PlayerInfo player;
+        in >> player;
+
+        emit playerParamsChanged(player);
+        qDebug() << "Data RECEIVED!";
+    }
+    else if (type == BULLET) {
+        PlayerInfo player;
+        in >> player;
+
+        emit bulletReceived(player);
+        qDebug() << "Data RECEIVED!";
+    }
 }
 
 void Server::sendCoordsToClient(QTcpSocket *pSocket, const QVector<PlayerInfo> players)
@@ -61,7 +76,7 @@ void Server::sendCoordsToClient(QTcpSocket *pSocket, const QVector<PlayerInfo> p
     QByteArray block;
     QDataStream out (&block, QIODevice::WriteOnly);
 
-    out << quint16(0) << players;
+    out << quint16(0) << COORDS << players;
     out.device()->seek(0);
     out << quint16(block.size() - sizeof (quint16));
     pSocket->write(block);
@@ -79,6 +94,18 @@ void Server::sendIdAndMapToClient(QTcpSocket *pSocket, idAndMap info)
     out << quint32(block.size() - sizeof (quint32));
     pSocket->write(block);
     qDebug() << "MAP SENDED!";
+}
+
+void Server::sendBulletToClient(QTcpSocket *pSocket, BulletInfo bullet)
+{
+    QByteArray block;
+    QDataStream out (&block, QIODevice::WriteOnly);
+
+    out << quint16(0) << BULLET << bullet;
+    out.device()->seek(0);
+    out << quint16(block.size() - sizeof (quint16));
+    pSocket->write(block);
+    qDebug() << "BULLET SENDED!";
 }
 
 

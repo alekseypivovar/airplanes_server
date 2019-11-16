@@ -9,6 +9,7 @@
 #include <QRandomGenerator>
 #include "server.h"
 #include "plane.h"
+#include "bullet.h"
 
 
 class GameView : public QGraphicsView
@@ -43,10 +44,12 @@ public slots:
 
 private slots:
     void updatePlanePos(Plane* plane);
+    void createBullet(PlayerInfo player);
 
 signals:
     void sendIdAndMapToClient(QTcpSocket *pSocket, idAndMap info);
     void sendCoordsToClient(QTcpSocket *pSocket, const QVector<PlayerInfo> players);
+    void sendBulletToClient(QTcpSocket *pSocket, BulletInfo bullet);
 
 };
 

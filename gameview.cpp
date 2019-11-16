@@ -11,10 +11,12 @@ GameView::GameView(Server* server, QVector <QString> map, QWidget* parent) : QGr
 
     connect(server, SIGNAL(newPlayerConnected(QTcpSocket*)), this, SLOT(createNewPlayer(QTcpSocket*)));
     connect(server, SIGNAL(playerParamsChanged(PlayerInfo)), this, SLOT(updatePlayerParams(PlayerInfo)));
+    connect(server, SIGNAL(bulletReceived(PlayerInfo)), this, SLOT(createBullet(PlayerInfo)));
 
     connect(this, SIGNAL(sendIdAndMapToClient(QTcpSocket *, idAndMap)), server, SLOT(sendIdAndMapToClient(QTcpSocket *, idAndMap)));
     connect(this, SIGNAL(sendCoordsToClient(QTcpSocket *, const QVector<PlayerInfo> )),
             server, SLOT(sendCoordsToClient(QTcpSocket *, const QVector<PlayerInfo> )));
+    connect(this, SIGNAL(sendBulletToClient(QTcpSocket *, BulletInfo)), server, SLOT(sendBulletToClient(QTcpSocket *, BulletInfo)));
 
     updateParamsTimer = new QTimer;
     updateParamsTimer->start(2000);
@@ -108,5 +110,14 @@ void GameView::updatePlanePos(Plane *plane)
 {
     players[plane->getId()]. setPos(plane->scenePos());
     players[plane->getId()].setAngle(plane->getAngle());
+}
+
+void GameView::createBullet(PlayerInfo player)
+{
+    QPointF pos = planes.at(player.getId())->boundingRect().center();
+    Bullet* bullet = new Bullet(players[player.getId()].getPos(), players.at(player.getId()).getAngle());
+    this->scene()->addItem(bullet);
+    bullet->setPos(pos);
+    emit sendBulletToClient(players_SERVER.at(player.getId()).socket, bullet->getBulletInfo());
 }
 

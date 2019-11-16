@@ -17,6 +17,8 @@ MainWindow::MainWindow(QWidget *parent) :
     qRegisterMetaType<idAndMap>("idAndMap");
     qRegisterMetaType<PlayerInfo>("PlayerInfo");
     qRegisterMetaType<QVector<PlayerInfo>>("QVector<PlayerInfo>");
+    qRegisterMetaType<SendInfoType>("SendInfoType");
+    qRegisterMetaType<BulletInfo>("BulletInfo");
 }
 
 MainWindow::~MainWindow()
