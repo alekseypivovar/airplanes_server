@@ -2,7 +2,20 @@
     <qresource prefix="/">
         <file>map.txt</file>
         <file>images/plane.png</file>
-        <file>images/0.png</file>
         <file>map_small.txt</file>
+        <file>images/1.bmp</file>
+        <file>images/2.bmp</file>
+        <file>images/3.bmp</file>
+        <file>images/4.bmp</file>
+        <file>images/5.bmp</file>
+        <file>images/6.bmp</file>
+        <file>images/7.bmp</file>
+        <file>images/8.bmp</file>
+        <file>images/A.bmp</file>
+        <file>images/B.bmp</file>
+        <file>images/C.bmp</file>
+        <file>images/D.bmp</file>
+        <file>images/E.bmp</file>
+        <file>images/0.bmp</file>
     </qresource>
 </RCC>

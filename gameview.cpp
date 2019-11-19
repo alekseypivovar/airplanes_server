@@ -39,9 +39,47 @@ void GameView::drawMap() const
         for (int j = 0; j < map.at(0).length(); j++) {
             QPixmap tile;
             if (map.at(i).at(j) == "0"){
-                tile = QPixmap(":/images/0.png");
+                tile = QPixmap(":/images/0.bmp");
             }
-            // else if остальные тайлы ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            else if (map.at(i).at(j) == "1"){
+                tile = QPixmap(":/images/1.bmp");
+            }
+            else if (map.at(i).at(j) == "2"){
+                tile = QPixmap(":/images/2.bmp");
+            }
+            else if (map.at(i).at(j) == "3"){
+                tile = QPixmap(":/images/3.bmp");
+            }
+            else if (map.at(i).at(j) == "4"){
+                tile = QPixmap(":/images/4.bmp");
+            }
+            else if (map.at(i).at(j) == "5"){
+                tile = QPixmap(":/images/5.bmp");
+            }
+            else if (map.at(i).at(j) == "6"){
+                tile = QPixmap(":/images/6.bmp");
+            }
+            else if (map.at(i).at(j) == "7"){
+                tile = QPixmap(":/images/7.bmp");
+            }
+            else if (map.at(i).at(j) == "8"){
+                tile = QPixmap(":/images/8.bmp");
+            }else if (map.at(i).at(j) == "A"){
+                tile = QPixmap(":/images/A.bmp");
+            }
+            else if (map.at(i).at(j) == "B"){
+                tile = QPixmap(":/images/B.bmp");
+            }
+            else if (map.at(i).at(j) == "C"){
+                tile = QPixmap(":/images/C.bmp");
+            }
+            else if (map.at(i).at(j) == "D"){
+                tile = QPixmap(":/images/D.bmp");
+            }
+            else {
+                tile = QPixmap(":/images/E.bmp");
+            }
+
 
 
             //           tile = tile.scaled(TILE_SIZE, TILE_SIZE);
@@ -53,10 +91,18 @@ void GameView::drawMap() const
 
 QPointF GameView::getRandomPos() const
 {
-    quint32 x = QRandomGenerator::global()->bounded(quint32(scene()->width()  * 0.8)) + quint32(scene()->width()  * 0.1);
-    quint32 y = QRandomGenerator::global()->bounded(quint32(scene()->height() * 0.8)) + quint32(scene()->height() * 0.1);
+    // Вариант для нормальной версии Qt
+//    quint32 x = QRandomGenerator::global()->bounded(quint32(scene()->width()  * 0.8)) + quint32(scene()->width()  * 0.1);
+//    quint32 y = QRandomGenerator::global()->bounded(quint32(scene()->height() * 0.8)) + quint32(scene()->height() * 0.1);
+
+    qsrand(quint32(QDateTime::currentMSecsSinceEpoch()));
+    quint32 high = quint32(scene()->width()  * 0.8);
+    quint32 low  = quint32(scene()->width()  * 0.1);
+    quint32 x = quint32(qrand()) % ((high + 1) - low) + low;
+    quint32 y = quint32(qrand()) % ((high + 1) - low) + low;
     return QPointF(x, y);
 }
+
 
 void GameView::createNewPlayer(QTcpSocket *pClientSocket)
 {
@@ -76,12 +122,14 @@ void GameView::createNewPlayer(QTcpSocket *pClientSocket)
     planes << plane;
     plane->setPos(pos);
     connect(plane, SIGNAL(planeMoved(Plane*)), this, SLOT(updatePlanePos(Plane*)));
+    connect(plane, SIGNAL(planeAndBulletCollided(Plane*, Bullet*)),
+            this, SLOT(planeAndBulletCollided(Plane*, Bullet*)));
 
     idAndMap id_map;
     id_map.id  = id;
     id_map.map = map;
     emit sendIdAndMapToClient(pClientSocket, id_map);
-//    sendParamsForAllPlayers();
+    sendParamsForAllPlayers();
 }
 
 void GameView::updatePlayerParams(PlayerInfo player)
@@ -89,10 +137,8 @@ void GameView::updatePlayerParams(PlayerInfo player)
     qint32 number = player.getId();
     players[number].setSpeed(player.getSpeed());
     players[number].setAngleSpeed(player.getAngleSpeed());
-//    players[number].setAngle(player.getAngle());
     planes [number]->setSpeed(player.getSpeed());
     planes [number]->setAngleSpeed(player.getAngleSpeed());
-//    planes [number]->setAngle(player.getAngle());
 
     sendParamsForAllPlayers();
 }
@@ -106,18 +152,121 @@ void GameView::sendParamsForAllPlayers()
     }
 }
 
+void GameView::planeAndBulletCollided(Plane *plane, Bullet *bullet)
+{
+    players[(plane->getId())].setHealth(players[(plane->getId())].getHealth() - 1);
+    qDebug() << "Health = " << players[(plane->getId())].getHealth();
+    if (players[(plane->getId())].getHealth() <= 0)
+        respawn(plane);
+    this->scene()->removeItem(bullet);
+    delete bullet;
+    sendParamsForAllPlayers();
+    qDebug() << "Collision - BULLET!";
+}
+
 void GameView::updatePlanePos(Plane *plane)
 {
     players[plane->getId()]. setPos(plane->scenePos());
     players[plane->getId()].setAngle(plane->getAngle());
+
+    QPointF planePos = plane->scenePos();
+    if (planePos.x() < 0 || planePos.x() > scene()->width() ||
+            planePos.y() < 0 || planePos.y() > scene()->height()) {
+        players[(plane->getId())].setHealth(0);
+        respawn(plane);
+    }
 }
+
+
+void GameView::checkCollisions(Plane *plane)
+{
+    QList<QGraphicsItem *> items = scene()->collidingItems(plane);
+    if (items.isEmpty()) {
+        return;
+    }
+
+    for (int i = 0; i < items.length(); i++) {
+        Bullet* bullet = qgraphicsitem_cast<Bullet*>(items.at(i));
+        if (bullet) {
+            players[(plane->getId())].setHealth(players[(plane->getId())].getHealth() - 1);
+            qDebug() << "Health = " << players[(plane->getId())].getHealth();
+            if (players[(plane->getId())].getHealth() <= 0)
+                respawn(plane);
+            this->scene()->removeItem(bullet);
+            delete bullet;
+            sendParamsForAllPlayers();
+            qDebug() << "Collision - BULLET!";
+            return;
+        }
+        else {
+            Plane* enemyPlane = qgraphicsitem_cast<Plane*>(items.at(i));
+            if (enemyPlane) {
+                players[(plane->getId())].setHealth(0);
+                players[(enemyPlane->getId())].setHealth(0);
+                sendParamsForAllPlayers();
+                qDebug() << "Collision - PLANE!";
+                respawn(plane);
+                respawn(enemyPlane);
+                return;
+            }
+        }
+    }
+
+}
+
+void GameView::respawn(Plane *plane)
+{
+    // Показать взрыв! ++++++++++++++++++++++++++++++++
+    qDebug() << "Respawn!";
+    QPointF newPos = getRandomPos();
+    qDebug() << "New pos:" << newPos;
+//    plane->hide();
+    planes[plane->getId()]->setPos(newPos);
+    planes[plane->getId()]->setSpeed(0);
+    planes[plane->getId()]->setAngleSpeed(0);
+    players[(plane->getId())].setPos(newPos);
+    players[(plane->getId())].setSpeed(0);
+    players[(plane->getId())].setAngleSpeed(0);
+    sendParamsForAllPlayers();
+    //QTimer::singleShot(2000, plane, SLOT(makePlaneAlive(plane)));
+    QTimer::singleShot(5000, [=]() {
+        qDebug() << "Plane alive again!!";
+        players[(plane->getId())].setHealth(5);
+        planes[plane->getId()]->setSpeed(PLANE_SPEED);
+        players[(plane->getId())].setSpeed(PLANE_SPEED);
+        sendParamsForAllPlayers();
+    } );
+
+//    QTimer *timer = new QTimer(this);
+//    timer->setSingleShot(true);
+
+//    connect(timer, &QTimer::timeout, [=]() {
+//        plane->setSpeed(PLANE_SPEED);
+//        players[(plane->getId())].setSpeed(PLANE_SPEED);
+//        sendParamsForAllPlayers();
+//        timer->deleteLater();
+//    } );
+}
+
 
 void GameView::createBullet(PlayerInfo player)
 {
-    QPointF pos = planes.at(player.getId())->boundingRect().center();
-    Bullet* bullet = new Bullet(players[player.getId()].getPos(), players.at(player.getId()).getAngle());
+    QPointF pos = planes.at(player.getId())->scenePos() + planes.at(player.getId())->getGunPos();
+    Bullet* bullet = new Bullet(pos, players.at(player.getId()).getAngle());
     this->scene()->addItem(bullet);
     bullet->setPos(pos);
-    emit sendBulletToClient(players_SERVER.at(player.getId()).socket, bullet->getBulletInfo());
+
+    for (int i = 0; i < players_SERVER.length(); i++) {
+        if (players_SERVER.at(i).isEnabled) {           // ПРОВЕРИТЬ УСЛОВИЕ ПРИ УДАЛЕНИИ ИГРОКОВ +++++++++++++++++++++
+            emit sendBulletToClient(players_SERVER.at(i).socket, bullet->getBulletInfo());
+        }
+    }
+}
+
+void GameView::makePlaneAlive(Plane *plane)
+{
+    plane->setSpeed(PLANE_SPEED);
+    players[(plane->getId())].setSpeed(PLANE_SPEED);
+    sendParamsForAllPlayers();
 }
 

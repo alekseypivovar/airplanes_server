@@ -48,15 +48,9 @@ RESOURCES += \
 
 
 
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-Warships_airplanes_DLL-Desktop_Qt_5_9_8_MinGW_32bit-Debug/release/ -lWarships_airplanes_DLL
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-Warships_airplanes_DLL-Desktop_Qt_5_9_8_MinGW_32bit-Debug/debug/ -lWarships_airplanes_DLL
+else:unix: LIBS += -L$$PWD/../build-Warships_airplanes_DLL-Desktop_Qt_5_9_8_MinGW_32bit-Debug/ -lWarships_airplanes_DLL
 
-
-
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-Warships_airplanes_DLL-Desktop_Qt_5_12_5_MinGW_64_bit-Debug/release/ -lWarships_airplanes_DLL
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-Warships_airplanes_DLL-Desktop_Qt_5_12_5_MinGW_64_bit-Debug/debug/ -lWarships_airplanes_DLL
-else:unix: LIBS += -L$$PWD/../build-Warships_airplanes_DLL-Desktop_Qt_5_12_5_MinGW_64_bit-Debug/ -lWarships_airplanes_DLL
-
-INCLUDEPATH += $$PWD/../airplanes_lib-master
-DEPENDPATH += $$PWD/../airplanes_lib-master
-
-DISTFILES += \
-    map_small.txt
+INCLUDEPATH += $$PWD/../airplanes_lib
+DEPENDPATH += $$PWD/../airplanes_lib

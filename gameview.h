@@ -6,7 +6,8 @@
 #include <QTcpSocket>
 #include <QTimer>
 #include <QGraphicsPixmapItem>
-#include <QRandomGenerator>
+//#include <QRandomGenerator>
+#include <QDateTime>
 #include "server.h"
 #include "plane.h"
 #include "bullet.h"
@@ -35,16 +36,19 @@ private:
 
     void drawMap() const;
     QPointF getRandomPos() const;
-
+    void checkCollisions(Plane *plane);
+    void respawn(Plane *plane);
 
 public slots:
     void createNewPlayer(QTcpSocket* pClientSocket);
     void updatePlayerParams(PlayerInfo player);
     void sendParamsForAllPlayers();
+    void planeAndBulletCollided(Plane* plane, Bullet* bullet);
 
 private slots:
     void updatePlanePos(Plane* plane);
     void createBullet(PlayerInfo player);
+    void makePlaneAlive(Plane* plane);
 
 signals:
     void sendIdAndMapToClient(QTcpSocket *pSocket, idAndMap info);

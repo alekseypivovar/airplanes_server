@@ -80,7 +80,7 @@ void Server::sendCoordsToClient(QTcpSocket *pSocket, const QVector<PlayerInfo> p
     out.device()->seek(0);
     out << quint16(block.size() - sizeof (quint16));
     pSocket->write(block);
-    //qDebug() << "Coords SENDED!";
+    qDebug() << "Coords SENDED!";
 }
 
 
