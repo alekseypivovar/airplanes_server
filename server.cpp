@@ -26,7 +26,13 @@ Server::~Server()
 void Server::slotNewConnection(){
 
     QTcpSocket* pClientSocket = m_ptcpServer->nextPendingConnection();
-    connect(pClientSocket, SIGNAL(disconnected()), pClientSocket, SLOT(deleteLater()));
+//    connect(pClientSocket, SIGNAL(disconnected()), pClientSocket, SLOT(deleteLater()));
+
+    connect(pClientSocket, &QTcpSocket::disconnected, [=]() {
+        emit clientDisconneted(pClientSocket);
+        pClientSocket->deleteLater();
+    } );
+
     connect(pClientSocket, SIGNAL(readyRead()), this, SLOT(slotReadClient()));
     qDebug() << "Connected!";
 

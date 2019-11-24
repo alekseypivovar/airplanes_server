@@ -12,6 +12,7 @@ GameView::GameView(Server* server, QVector <QString> map, QWidget* parent) : QGr
     connect(server, SIGNAL(newPlayerConnected(QTcpSocket*)), this, SLOT(createNewPlayer(QTcpSocket*)));
     connect(server, SIGNAL(playerParamsChanged(PlayerInfo)), this, SLOT(updatePlayerParams(PlayerInfo)));
     connect(server, SIGNAL(bulletReceived(PlayerInfo)), this, SLOT(createBullet(PlayerInfo)));
+    connect(server, SIGNAL(clientDisconneted(QTcpSocket* )), this, SLOT(disconnectClient(QTcpSocket*)));
 
     connect(this, SIGNAL(sendIdAndMapToClient(QTcpSocket *, idAndMap)), server, SLOT(sendIdAndMapToClient(QTcpSocket *, idAndMap)));
     connect(this, SIGNAL(sendCoordsToClient(QTcpSocket *, const QVector<PlayerInfo> )),
@@ -95,7 +96,7 @@ QPointF GameView::getRandomPos() const
 //    quint32 x = QRandomGenerator::global()->bounded(quint32(scene()->width()  * 0.8)) + quint32(scene()->width()  * 0.1);
 //    quint32 y = QRandomGenerator::global()->bounded(quint32(scene()->height() * 0.8)) + quint32(scene()->height() * 0.1);
 
-    qsrand(quint32(QDateTime::currentMSecsSinceEpoch()));
+//    qsrand(quint32(QDateTime::currentMSecsSinceEpoch()));
     quint32 high = quint32(scene()->width()  * 0.8);
     quint32 low  = quint32(scene()->width()  * 0.1);
     quint32 x = quint32(qrand()) % ((high + 1) - low) + low;
@@ -124,6 +125,8 @@ void GameView::createNewPlayer(QTcpSocket *pClientSocket)
     connect(plane, SIGNAL(planeMoved(Plane*)), this, SLOT(updatePlanePos(Plane*)));
     connect(plane, SIGNAL(planeAndBulletCollided(Plane*, Bullet*)),
             this, SLOT(planeAndBulletCollided(Plane*, Bullet*)));
+    connect(plane, SIGNAL(planeAndPlaneCollided(Plane*, Plane*)),
+            this, SLOT(planeAndPlaneCollided(Plane*, Plane*)));
 
     idAndMap id_map;
     id_map.id  = id;
@@ -154,14 +157,28 @@ void GameView::sendParamsForAllPlayers()
 
 void GameView::planeAndBulletCollided(Plane *plane, Bullet *bullet)
 {
+    qDebug() << "Collision - BULLET!";
     players[(plane->getId())].setHealth(players[(plane->getId())].getHealth() - 1);
     qDebug() << "Health = " << players[(plane->getId())].getHealth();
     if (players[(plane->getId())].getHealth() <= 0)
         respawn(plane);
+
+
+
     this->scene()->removeItem(bullet);
     delete bullet;
     sendParamsForAllPlayers();
-    qDebug() << "Collision - BULLET!";
+}
+
+void GameView::planeAndPlaneCollided(Plane *plane1, Plane *plane2)
+{
+    qDebug() << "Collision - PLANES!";
+    players[(plane1->getId())].setHealth(0);
+    respawn(plane1);
+    players[(plane2->getId())].setHealth(0);
+    respawn(plane2, 7000);
+
+    sendParamsForAllPlayers();
 }
 
 void GameView::updatePlanePos(Plane *plane)
@@ -178,45 +195,44 @@ void GameView::updatePlanePos(Plane *plane)
 }
 
 
-void GameView::checkCollisions(Plane *plane)
+//void GameView::checkCollisions(Plane *plane)
+//{
+//    QList<QGraphicsItem *> items = scene()->collidingItems(plane);
+//    if (items.isEmpty()) {
+//        return;
+//    }
+
+//    for (int i = 0; i < items.length(); i++) {
+//        Bullet* bullet = qgraphicsitem_cast<Bullet*>(items.at(i));
+//        if (bullet) {
+//            players[(plane->getId())].setHealth(players[(plane->getId())].getHealth() - 1);
+//            qDebug() << "Health = " << players[(plane->getId())].getHealth();
+//            if (players[(plane->getId())].getHealth() <= 0)
+//                respawn(plane);
+//            this->scene()->removeItem(bullet);
+//            delete bullet;
+//            sendParamsForAllPlayers();
+//            qDebug() << "Collision - BULLET!";
+//            return;
+//        }
+//        else {
+//            Plane* enemyPlane = qgraphicsitem_cast<Plane*>(items.at(i));
+//            if (enemyPlane) {
+//                players[(plane->getId())].setHealth(0);
+//                players[(enemyPlane->getId())].setHealth(0);
+//                sendParamsForAllPlayers();
+//                qDebug() << "Collision - PLANE!";
+//                respawn(plane);
+//                respawn(enemyPlane);
+//                return;
+//            }
+//        }
+//    }
+
+//}
+
+void GameView::respawn(Plane *plane, qint32 time)
 {
-    QList<QGraphicsItem *> items = scene()->collidingItems(plane);
-    if (items.isEmpty()) {
-        return;
-    }
-
-    for (int i = 0; i < items.length(); i++) {
-        Bullet* bullet = qgraphicsitem_cast<Bullet*>(items.at(i));
-        if (bullet) {
-            players[(plane->getId())].setHealth(players[(plane->getId())].getHealth() - 1);
-            qDebug() << "Health = " << players[(plane->getId())].getHealth();
-            if (players[(plane->getId())].getHealth() <= 0)
-                respawn(plane);
-            this->scene()->removeItem(bullet);
-            delete bullet;
-            sendParamsForAllPlayers();
-            qDebug() << "Collision - BULLET!";
-            return;
-        }
-        else {
-            Plane* enemyPlane = qgraphicsitem_cast<Plane*>(items.at(i));
-            if (enemyPlane) {
-                players[(plane->getId())].setHealth(0);
-                players[(enemyPlane->getId())].setHealth(0);
-                sendParamsForAllPlayers();
-                qDebug() << "Collision - PLANE!";
-                respawn(plane);
-                respawn(enemyPlane);
-                return;
-            }
-        }
-    }
-
-}
-
-void GameView::respawn(Plane *plane)
-{
-    // Показать взрыв! ++++++++++++++++++++++++++++++++
     qDebug() << "Respawn!";
     QPointF newPos = getRandomPos();
     qDebug() << "New pos:" << newPos;
@@ -227,9 +243,9 @@ void GameView::respawn(Plane *plane)
     players[(plane->getId())].setPos(newPos);
     players[(plane->getId())].setSpeed(0);
     players[(plane->getId())].setAngleSpeed(0);
-    sendParamsForAllPlayers();
+//    sendParamsForAllPlayers();
     //QTimer::singleShot(2000, plane, SLOT(makePlaneAlive(plane)));
-    QTimer::singleShot(5000, [=]() {
+    QTimer::singleShot(time, [=]() {
         qDebug() << "Plane alive again!!";
         players[(plane->getId())].setHealth(5);
         planes[plane->getId()]->setSpeed(PLANE_SPEED);
@@ -263,10 +279,25 @@ void GameView::createBullet(PlayerInfo player)
     }
 }
 
-void GameView::makePlaneAlive(Plane *plane)
+//void GameView::makePlaneAlive(Plane *plane)
+//{
+//    plane->setSpeed(PLANE_SPEED);
+//    players[(plane->getId())].setSpeed(PLANE_SPEED);
+//    sendParamsForAllPlayers();
+//}
+
+void GameView::disconnectClient(QTcpSocket *pClientSocket)
 {
-    plane->setSpeed(PLANE_SPEED);
-    players[(plane->getId())].setSpeed(PLANE_SPEED);
-    sendParamsForAllPlayers();
+    for (int i = 0; i < players_SERVER.length(); i++) {
+        if (players_SERVER.at(i).socket == pClientSocket) {
+            players_SERVER[i].isEnabled = false;
+            players[i].setHealth(0);
+
+            sendParamsForAllPlayers();
+            this->scene()->removeItem(planes[i]);
+            delete planes[i];
+            return;
+        }
+    }
 }
 

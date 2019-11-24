@@ -36,19 +36,21 @@ private:
 
     void drawMap() const;
     QPointF getRandomPos() const;
-    void checkCollisions(Plane *plane);
-    void respawn(Plane *plane);
+//    void checkCollisions(Plane *plane);
+    void respawn(Plane *plane, qint32 time = 5000);
 
 public slots:
     void createNewPlayer(QTcpSocket* pClientSocket);
     void updatePlayerParams(PlayerInfo player);
     void sendParamsForAllPlayers();
     void planeAndBulletCollided(Plane* plane, Bullet* bullet);
+    void planeAndPlaneCollided(Plane* plane1, Plane* plane2);
 
 private slots:
     void updatePlanePos(Plane* plane);
     void createBullet(PlayerInfo player);
-    void makePlaneAlive(Plane* plane);
+//    void makePlaneAlive(Plane* plane);
+    void disconnectClient(QTcpSocket* pClientSocket);
 
 signals:
     void sendIdAndMapToClient(QTcpSocket *pSocket, idAndMap info);

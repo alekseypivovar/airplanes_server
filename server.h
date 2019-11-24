@@ -34,6 +34,7 @@ signals:
     void newPlayerConnected(QTcpSocket* pClientSocket);
     void playerParamsChanged(PlayerInfo player);
     void bulletReceived(PlayerInfo player);
+    void clientDisconneted(QTcpSocket* pClientSocket);
 };
 
 #endif // SERVER_H
