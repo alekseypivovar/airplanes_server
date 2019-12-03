@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <QVector>
+#include "simplecrypt.h"
 #include "playerinfo.h"
 #include "bullet.h"
 
@@ -17,6 +18,7 @@ private:
     QTcpServer* m_ptcpServer;
     quint32 blockSize_map;
     quint16 blockSize;
+    SimpleCrypt crypto;
 
 public:
     Server(int port, QWidget *parent = nullptr);

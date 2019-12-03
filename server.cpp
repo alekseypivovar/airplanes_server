@@ -17,6 +17,7 @@ Server::Server(int port, QWidget *parent)
         qDebug() << "Listening port: " << port;
 
     connect(m_ptcpServer, SIGNAL(newConnection()), this, SLOT(slotNewConnection()));
+    this->crypto = SimpleCrypt(4815162342);
 }
 
 Server::~Server()
@@ -62,15 +63,23 @@ void Server::slotReadClient()
     type = SendInfoType(buffer);
 
     if (type == COORDS) {
+        QByteArray bytes;
+        in >> bytes;
+        bytes = crypto.decryptToByteArray(bytes);
         PlayerInfo player;
-        in >> player;
+        QDataStream ds(&bytes, QIODevice::ReadWrite);
+        ds >> player;
 
         emit playerParamsChanged(player);
         qDebug() << "Data RECEIVED!";
     }
     else if (type == BULLET) {
+        QByteArray bytes;
+        in >> bytes;
+        bytes = crypto.decryptToByteArray(bytes);
         PlayerInfo player;
-        in >> player;
+        QDataStream ds(&bytes, QIODevice::ReadWrite);
+        ds >> player;
 
         emit bulletReceived(player);
         qDebug() << "Data RECEIVED!";
@@ -79,10 +88,15 @@ void Server::slotReadClient()
 
 void Server::sendCoordsToClient(QTcpSocket *pSocket, const QVector<PlayerInfo> players)
 {
+    QByteArray data;
+    QDataStream ds(&data, QIODevice::ReadWrite);
+    ds << players;
+    data = crypto.encryptToByteArray(data);
+
     QByteArray block;
     QDataStream out (&block, QIODevice::WriteOnly);
 
-    out << quint16(0) << COORDS << players;
+    out << quint16(0) << COORDS << data;
     out.device()->seek(0);
     out << quint16(block.size() - sizeof (quint16));
     pSocket->write(block);
@@ -92,10 +106,15 @@ void Server::sendCoordsToClient(QTcpSocket *pSocket, const QVector<PlayerInfo> p
 
 void Server::sendIdAndMapToClient(QTcpSocket *pSocket, idAndMap info)
 {
+    QByteArray data;
+    QDataStream ds(&data, QIODevice::ReadWrite);
+    ds << info;
+    data = crypto.encryptToByteArray(data);
+
     QByteArray block;
     QDataStream out (&block, QIODevice::WriteOnly);
 
-    out << quint32(0) << info;
+    out << quint32(0) << data;
     out.device()->seek(0);
     out << quint32(block.size() - sizeof (quint32));
     pSocket->write(block);
@@ -104,10 +123,15 @@ void Server::sendIdAndMapToClient(QTcpSocket *pSocket, idAndMap info)
 
 void Server::sendBulletToClient(QTcpSocket *pSocket, BulletInfo bullet)
 {
+    QByteArray data;
+    QDataStream ds(&data, QIODevice::ReadWrite);
+    ds << bullet;
+    data = crypto.encryptToByteArray(data);
+
     QByteArray block;
     QDataStream out (&block, QIODevice::WriteOnly);
 
-    out << quint16(0) << BULLET << bullet;
+    out << quint16(0) << BULLET << data;
     out.device()->seek(0);
     out << quint16(block.size() - sizeof (quint16));
     pSocket->write(block);
