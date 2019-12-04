@@ -28,12 +28,14 @@ SOURCES += \
         gameview.cpp \
         main.cpp \
         mainwindow.cpp \
-        server.cpp
+        server.cpp \
+        serverthread.cpp
 
 HEADERS += \
         gameview.h \
         mainwindow.h \
-        server.h
+        server.h \
+        serverthread.h
 
 FORMS += \
         mainwindow.ui

@@ -9,20 +9,24 @@ GameView::GameView(Server* server, QVector <QString> map, QWidget* parent) : QGr
 
     drawMap();
 
-    connect(server, SIGNAL(newPlayerConnected(QTcpSocket*)), this, SLOT(createNewPlayer(QTcpSocket*)));
-    connect(server, SIGNAL(playerParamsChanged(PlayerInfo)), this, SLOT(updatePlayerParams(PlayerInfo)));
-    connect(server, SIGNAL(bulletReceived(PlayerInfo)), this, SLOT(createBullet(PlayerInfo)));
-    connect(server, SIGNAL(clientDisconneted(QTcpSocket* )), this, SLOT(disconnectClient(QTcpSocket*)));
+    connect(server, SIGNAL(newPlayerConnected(QTcpSocket*)),
+            this, SLOT(createNewPlayer(QTcpSocket*)), Qt::QueuedConnection);
+    connect(server, SIGNAL(playerParamsChanged(PlayerInfo)),
+            this, SLOT(updatePlayerParams(PlayerInfo)), Qt::QueuedConnection);
+    connect(server, SIGNAL(bulletReceived(PlayerInfo)), this, SLOT(createBullet(PlayerInfo)), Qt::QueuedConnection);
+    connect(server, SIGNAL(clientDisconneted(QTcpSocket* )), this, SLOT(disconnectClient(QTcpSocket*)), Qt::QueuedConnection);
 
-    connect(this, SIGNAL(sendIdAndMapToClient(QTcpSocket *, idAndMap)), server, SLOT(sendIdAndMapToClient(QTcpSocket *, idAndMap)));
+    connect(this, SIGNAL(sendIdAndMapToClient(QTcpSocket *, idAndMap)),
+            server, SLOT(sendIdAndMapToClient(QTcpSocket *, idAndMap)), Qt::QueuedConnection);
     connect(this, SIGNAL(sendCoordsToClient(QTcpSocket *, const QVector<PlayerInfo> )),
-            server, SLOT(sendCoordsToClient(QTcpSocket *, const QVector<PlayerInfo> )));
-    connect(this, SIGNAL(sendBulletToClient(QTcpSocket *, BulletInfo)), server, SLOT(sendBulletToClient(QTcpSocket *, BulletInfo)));
+            server, SLOT(sendCoordsToClient(QTcpSocket *, const QVector<PlayerInfo> )), Qt::QueuedConnection);
+    connect(this, SIGNAL(sendBulletToClient(QTcpSocket *, BulletInfo)),
+            server, SLOT(sendBulletToClient(QTcpSocket *, BulletInfo)), Qt::QueuedConnection);
 
     updateParamsTimer = new QTimer;
     updateParamsTimer->start(2000);
     if (scene != nullptr)
-        connect(updateParamsTimer, SIGNAL(timeout()), this, SLOT(sendParamsForAllPlayers()));
+        connect(updateParamsTimer, SIGNAL(timeout()), this, SLOT(sendParamsForAllPlayers()), Qt::QueuedConnection);
 
     animationTimer = new QTimer;
     animationTimer->start(1000 / FRAMES_PER_SEC);

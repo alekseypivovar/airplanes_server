@@ -7,18 +7,20 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <QVector>
+#include <QThread>
 #include "simplecrypt.h"
 #include "playerinfo.h"
 #include "bullet.h"
+#include "serverthread.h"
 
 class Server : public QTcpServer
 {
     Q_OBJECT
 private:
     QTcpServer* m_ptcpServer;
-    quint32 blockSize_map;
-    quint16 blockSize;
-    SimpleCrypt crypto;
+
+
+
 
 public:
     Server(int port, QWidget *parent = nullptr);
@@ -37,6 +39,12 @@ signals:
     void playerParamsChanged(PlayerInfo player);
     void bulletReceived(PlayerInfo player);
     void clientDisconneted(QTcpSocket* pClientSocket);
+
+    void sendCoords(QTcpSocket* pSocket, const QVector<PlayerInfo> players);
+    void sendIdAndMap(QTcpSocket* pSocket, idAndMap info);
+    void sendBullet(QTcpSocket *pSocket, BulletInfo bullet);
+    void readClient();
+
 };
 
 #endif // SERVER_H

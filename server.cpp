@@ -1,9 +1,8 @@
 #include "server.h"
 
 
-
 Server::Server(int port, QWidget *parent)
-    : QTcpServer(parent), blockSize_map(0), blockSize(0)
+    : QTcpServer(parent)
 {
     m_ptcpServer = new QTcpServer(this);
     if(!m_ptcpServer->listen(QHostAddress::Any, quint16(port))){
@@ -17,126 +16,65 @@ Server::Server(int port, QWidget *parent)
         qDebug() << "Listening port: " << port;
 
     connect(m_ptcpServer, SIGNAL(newConnection()), this, SLOT(slotNewConnection()));
-    this->crypto = SimpleCrypt(4815162342);
+
 }
 
 Server::~Server()
 {
 }
 
-void Server::slotNewConnection(){
-
-    QTcpSocket* pClientSocket = m_ptcpServer->nextPendingConnection();
-//    connect(pClientSocket, SIGNAL(disconnected()), pClientSocket, SLOT(deleteLater()));
-
-    connect(pClientSocket, &QTcpSocket::disconnected, [=]() {
-        emit clientDisconneted(pClientSocket);
-        pClientSocket->deleteLater();
-    } );
-
-    connect(pClientSocket, SIGNAL(readyRead()), this, SLOT(slotReadClient()));
-    qDebug() << "Connected!";
-
-    emit newPlayerConnected(pClientSocket);
-}
-
-void Server::slotReadClient()
-{
-    qDebug() << "Read data...";
-    QTcpSocket* pClientSocket = qobject_cast<QTcpSocket*>(sender());
-    QDataStream in(pClientSocket);
-
-    if (blockSize == 0){
-        if (pClientSocket->bytesAvailable() < int(sizeof (quint16)))
-            return;
-        in >> blockSize;
-    }
-
-    if (pClientSocket->bytesAvailable() < blockSize)
-        return;
-
-    blockSize = 0;
-
-    SendInfoType type;
-    int buffer;
-    in >> buffer;
-    type = SendInfoType(buffer);
-
-    if (type == COORDS) {
-        QByteArray bytes;
-        in >> bytes;
-        bytes = crypto.decryptToByteArray(bytes);
-        PlayerInfo player;
-        QDataStream ds(&bytes, QIODevice::ReadWrite);
-        ds >> player;
-
-        emit playerParamsChanged(player);
-        qDebug() << "Data RECEIVED!";
-    }
-    else if (type == BULLET) {
-        QByteArray bytes;
-        in >> bytes;
-        bytes = crypto.decryptToByteArray(bytes);
-        PlayerInfo player;
-        QDataStream ds(&bytes, QIODevice::ReadWrite);
-        ds >> player;
-
-        emit bulletReceived(player);
-        qDebug() << "Data RECEIVED!";
-    }
-}
-
 void Server::sendCoordsToClient(QTcpSocket *pSocket, const QVector<PlayerInfo> players)
 {
-    QByteArray data;
-    QDataStream ds(&data, QIODevice::ReadWrite);
-    ds << players;
-    data = crypto.encryptToByteArray(data);
-
-    QByteArray block;
-    QDataStream out (&block, QIODevice::WriteOnly);
-
-    out << quint16(0) << COORDS << data;
-    out.device()->seek(0);
-    out << quint16(block.size() - sizeof (quint16));
-    pSocket->write(block);
-    qDebug() << "Coords SENDED!";
+    emit sendCoords(pSocket, players);
 }
-
 
 void Server::sendIdAndMapToClient(QTcpSocket *pSocket, idAndMap info)
 {
-    QByteArray data;
-    QDataStream ds(&data, QIODevice::ReadWrite);
-    ds << info;
-    data = crypto.encryptToByteArray(data);
-
-    QByteArray block;
-    QDataStream out (&block, QIODevice::WriteOnly);
-
-    out << quint32(0) << data;
-    out.device()->seek(0);
-    out << quint32(block.size() - sizeof (quint32));
-    pSocket->write(block);
-    qDebug() << "MAP SENDED!";
+    emit sendIdAndMap(pSocket, info);
 }
 
 void Server::sendBulletToClient(QTcpSocket *pSocket, BulletInfo bullet)
 {
-    QByteArray data;
-    QDataStream ds(&data, QIODevice::ReadWrite);
-    ds << bullet;
-    data = crypto.encryptToByteArray(data);
-
-    QByteArray block;
-    QDataStream out (&block, QIODevice::WriteOnly);
-
-    out << quint16(0) << BULLET << data;
-    out.device()->seek(0);
-    out << quint16(block.size() - sizeof (quint16));
-    pSocket->write(block);
-    qDebug() << "BULLET SENDED!";
+    emit sendBullet(pSocket, bullet);
 }
+
+void Server::slotReadClient()
+{
+    emit readClient();
+}
+
+void Server::slotNewConnection(){
+    ServerThread* thread = new ServerThread(m_ptcpServer, this);
+
+//    connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+
+    connect(thread, &ServerThread::newPlayerConnected, [=](QTcpSocket* pClientSocket) {
+        emit newPlayerConnected(pClientSocket);
+    } );
+    connect(thread, &ServerThread::playerParamsChanged, [=](PlayerInfo player) {
+        emit playerParamsChanged(player);
+    } );
+    connect(thread, &ServerThread::bulletReceived, [=](PlayerInfo player) {
+        emit bulletReceived(player);
+    } );
+    connect(thread, &ServerThread::clientDisconneted, [=](QTcpSocket* pClientSocket) {
+        emit clientDisconneted(pClientSocket);
+    } );
+
+    connect(this, SIGNAL(sendCoords(QTcpSocket*, const QVector<PlayerInfo>)),
+            thread, SLOT(sendCoordsToClient(QTcpSocket*, const QVector<PlayerInfo>)), Qt::QueuedConnection);
+    connect(this, SIGNAL(sendIdAndMap(QTcpSocket*, idAndMap)),
+            thread, SLOT(sendIdAndMapToClient(QTcpSocket*, idAndMap)), Qt::QueuedConnection);
+    connect(this, SIGNAL(sendBullet(QTcpSocket*, BulletInfo)),
+            thread, SLOT(sendBulletToClient(QTcpSocket*, BulletInfo)), Qt::QueuedConnection);
+    connect(this, SIGNAL(readClient()),
+            thread, SLOT(slotReadClient()), Qt::QueuedConnection);
+    thread->start();
+}
+
+
+
+
 
 
 
