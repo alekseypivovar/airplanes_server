@@ -18,7 +18,7 @@ void ServerThread::run()
         pClientSocket->deleteLater();
     } );
 
-    connect(pClientSocket, SIGNAL(readyRead()), this, SLOT(slotReadClient()));
+    connect(pClientSocket, SIGNAL(readyRead()), this, SLOT(slotReadClient()), Qt::QueuedConnection);
     qDebug() << "Connected!";
 
     emit newPlayerConnected(pClientSocket);
@@ -72,6 +72,8 @@ void ServerThread::slotReadClient()
 
 void ServerThread::sendCoordsToClient(QTcpSocket *pSocket, const QVector<PlayerInfo> players)
 {
+    if (pSocket->socketDescriptor() != this->pClientSocket->socketDescriptor())
+        return;
     QByteArray data;
     QDataStream ds(&data, QIODevice::ReadWrite);
     ds << players;
@@ -90,6 +92,8 @@ void ServerThread::sendCoordsToClient(QTcpSocket *pSocket, const QVector<PlayerI
 
 void ServerThread::sendIdAndMapToClient(QTcpSocket *pSocket, idAndMap info)
 {
+    if (pSocket->socketDescriptor() != this->pClientSocket->socketDescriptor())
+        return;
     QByteArray data;
     QDataStream ds(&data, QIODevice::ReadWrite);
     ds << info;
@@ -107,6 +111,8 @@ void ServerThread::sendIdAndMapToClient(QTcpSocket *pSocket, idAndMap info)
 
 void ServerThread::sendBulletToClient(QTcpSocket *pSocket, BulletInfo bullet)
 {
+    if (pSocket->socketDescriptor() != this->pClientSocket->socketDescriptor())
+        return;
     QByteArray data;
     QDataStream ds(&data, QIODevice::ReadWrite);
     ds << bullet;

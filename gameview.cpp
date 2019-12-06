@@ -128,9 +128,9 @@ void GameView::createNewPlayer(QTcpSocket *pClientSocket)
     plane->setPos(pos);
     connect(plane, SIGNAL(planeMoved(Plane*)), this, SLOT(updatePlanePos(Plane*)));
     connect(plane, SIGNAL(planeAndBulletCollided(Plane*, Bullet*)),
-            this, SLOT(planeAndBulletCollided(Plane*, Bullet*)));
+            this, SLOT(planeAndBulletCollided(Plane*, Bullet*)), Qt::QueuedConnection);
     connect(plane, SIGNAL(planeAndPlaneCollided(Plane*, Plane*)),
-            this, SLOT(planeAndPlaneCollided(Plane*, Plane*)));
+            this, SLOT(planeAndPlaneCollided(Plane*, Plane*)), Qt::QueuedConnection);
 
     idAndMap id_map;
     id_map.id  = id;

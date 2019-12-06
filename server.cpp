@@ -69,6 +69,7 @@ void Server::slotNewConnection(){
             thread, SLOT(sendBulletToClient(QTcpSocket*, BulletInfo)), Qt::QueuedConnection);
     connect(this, SIGNAL(readClient()),
             thread, SLOT(slotReadClient()), Qt::QueuedConnection);
+
     thread->start();
 }
 
