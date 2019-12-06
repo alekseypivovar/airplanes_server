@@ -44,7 +44,7 @@ void Server::slotReadClient()
 }
 
 void Server::slotNewConnection(){
-    ServerThread* thread = new ServerThread(m_ptcpServer, this);
+    ServerThread* thread = new ServerThread(m_ptcpServer, nullptr);
 
 //    connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
 

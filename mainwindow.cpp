@@ -55,6 +55,8 @@ void MainWindow::on_pushButton_clicked()
             exit (1);
         }
         GameView* gameView = new GameView(server, map, this);
+
+        gameView->connectGameViewAndServer();
     }
     else {
         statusBar()->showMessage("Server start failed!");

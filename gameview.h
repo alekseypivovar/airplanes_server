@@ -19,6 +19,7 @@ class GameView : public QGraphicsView
 public:
     GameView(Server* server, QVector <QString> map, QWidget* parent = nullptr);
 
+    void connectGameViewAndServer();
 private:
     struct PlayerInfo_SERVER {
         qint32 id;
@@ -38,6 +39,8 @@ private:
     QPointF getRandomPos() const;
 //    void checkCollisions(Plane *plane);
     void respawn(Plane *plane, qint32 time = 5000);
+
+
 
 public slots:
     void createNewPlayer(QTcpSocket* pClientSocket);

@@ -9,19 +9,7 @@ GameView::GameView(Server* server, QVector <QString> map, QWidget* parent) : QGr
 
     drawMap();
 
-    connect(server, SIGNAL(newPlayerConnected(QTcpSocket*)),
-            this, SLOT(createNewPlayer(QTcpSocket*)), Qt::QueuedConnection);
-    connect(server, SIGNAL(playerParamsChanged(PlayerInfo)),
-            this, SLOT(updatePlayerParams(PlayerInfo)), Qt::QueuedConnection);
-    connect(server, SIGNAL(bulletReceived(PlayerInfo)), this, SLOT(createBullet(PlayerInfo)), Qt::QueuedConnection);
-    connect(server, SIGNAL(clientDisconneted(QTcpSocket* )), this, SLOT(disconnectClient(QTcpSocket*)), Qt::QueuedConnection);
 
-    connect(this, SIGNAL(sendIdAndMapToClient(QTcpSocket *, idAndMap)),
-            server, SLOT(sendIdAndMapToClient(QTcpSocket *, idAndMap)), Qt::QueuedConnection);
-    connect(this, SIGNAL(sendCoordsToClient(QTcpSocket *, const QVector<PlayerInfo> )),
-            server, SLOT(sendCoordsToClient(QTcpSocket *, const QVector<PlayerInfo> )), Qt::QueuedConnection);
-    connect(this, SIGNAL(sendBulletToClient(QTcpSocket *, BulletInfo)),
-            server, SLOT(sendBulletToClient(QTcpSocket *, BulletInfo)), Qt::QueuedConnection);
 
     updateParamsTimer = new QTimer;
     updateParamsTimer->start(2000);
@@ -265,7 +253,24 @@ void GameView::respawn(Plane *plane, qint32 time)
 //        players[(plane->getId())].setSpeed(PLANE_SPEED);
 //        sendParamsForAllPlayers();
 //        timer->deleteLater();
-//    } );
+    //    } );
+}
+
+void GameView::connectGameViewAndServer()
+{
+    connect(server, SIGNAL(newPlayerConnected(QTcpSocket*)),
+            this, SLOT(createNewPlayer(QTcpSocket*)), Qt::QueuedConnection);
+    connect(server, SIGNAL(playerParamsChanged(PlayerInfo)),
+            this, SLOT(updatePlayerParams(PlayerInfo)), Qt::BlockingQueuedConnection);
+    connect(server, SIGNAL(bulletReceived(PlayerInfo)), this, SLOT(createBullet(PlayerInfo)), Qt::QueuedConnection);
+    connect(server, SIGNAL(clientDisconneted(QTcpSocket* )), this, SLOT(disconnectClient(QTcpSocket*)), Qt::QueuedConnection);
+
+    connect(this, SIGNAL(sendIdAndMapToClient(QTcpSocket *, idAndMap)),
+            server, SLOT(sendIdAndMapToClient(QTcpSocket *, idAndMap)), Qt::QueuedConnection);
+    connect(this, SIGNAL(sendCoordsToClient(QTcpSocket *, const QVector<PlayerInfo> )),
+            server, SLOT(sendCoordsToClient(QTcpSocket *, const QVector<PlayerInfo> )), Qt::QueuedConnection);
+    connect(this, SIGNAL(sendBulletToClient(QTcpSocket *, BulletInfo)),
+            server, SLOT(sendBulletToClient(QTcpSocket *, BulletInfo)), Qt::QueuedConnection);
 }
 
 
