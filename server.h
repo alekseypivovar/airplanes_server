@@ -11,7 +11,7 @@
 #include "simplecrypt.h"
 #include "playerinfo.h"
 #include "bullet.h"
-#include "serverthread.h"
+
 
 class Server : public QTcpServer
 {

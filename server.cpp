@@ -1,4 +1,5 @@
 #include "server.h"
+#include "serverthread.h"
 
 
 Server::Server(int port, QWidget *parent)
@@ -58,13 +59,14 @@ void Server::slotNewConnection(){
         emit bulletReceived(player);
     } );
     connect(thread, &ServerThread::clientDisconneted, [=](QTcpSocket* pClientSocket) {
+        thread->deleteLater();
         emit clientDisconneted(pClientSocket);
     } );
 
-    connect(this, SIGNAL(sendCoords(QTcpSocket*, const QVector<PlayerInfo>)),
-            thread, SLOT(sendCoordsToClient(QTcpSocket*, const QVector<PlayerInfo>)), Qt::QueuedConnection);
     connect(this, SIGNAL(sendIdAndMap(QTcpSocket*, idAndMap)),
             thread, SLOT(sendIdAndMapToClient(QTcpSocket*, idAndMap)), Qt::QueuedConnection);
+    connect(this, SIGNAL(sendCoords(QTcpSocket*, const QVector<PlayerInfo>)),
+            thread, SLOT(sendCoordsToClient(QTcpSocket*, const QVector<PlayerInfo>)), Qt::QueuedConnection);
     connect(this, SIGNAL(sendBullet(QTcpSocket*, BulletInfo)),
             thread, SLOT(sendBulletToClient(QTcpSocket*, BulletInfo)), Qt::QueuedConnection);
     connect(this, SIGNAL(readClient()),

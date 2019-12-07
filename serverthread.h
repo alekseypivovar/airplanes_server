@@ -3,6 +3,7 @@
 #include <QThread>
 #include <QTcpSocket>
 #include <QTcpServer>
+#include "server.h"
 #include "simplecrypt.h"
 #include "playerinfo.h"
 #include "bullet.h"

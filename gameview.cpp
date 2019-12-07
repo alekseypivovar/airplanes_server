@@ -262,7 +262,7 @@ void GameView::connectGameViewAndServer()
             this, SLOT(createNewPlayer(QTcpSocket*)), Qt::QueuedConnection);
     connect(server, SIGNAL(playerParamsChanged(PlayerInfo)),
             this, SLOT(updatePlayerParams(PlayerInfo)), Qt::BlockingQueuedConnection);
-    connect(server, SIGNAL(bulletReceived(PlayerInfo)), this, SLOT(createBullet(PlayerInfo)), Qt::QueuedConnection);
+    connect(server, SIGNAL(bulletReceived(PlayerInfo)), this, SLOT(createBullet(PlayerInfo)), Qt::BlockingQueuedConnection);
     connect(server, SIGNAL(clientDisconneted(QTcpSocket* )), this, SLOT(disconnectClient(QTcpSocket*)), Qt::QueuedConnection);
 
     connect(this, SIGNAL(sendIdAndMapToClient(QTcpSocket *, idAndMap)),

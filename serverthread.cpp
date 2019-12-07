@@ -1,7 +1,7 @@
 #include "serverthread.h"
 
 
-ServerThread::ServerThread(QTcpServer* m_ptcpServer, QObject *parent)
+ServerThread::ServerThread(QTcpServer* m_ptcpServer,  QObject *parent)
     : QThread(parent), blockSize_map(0), blockSize(0)
 {
     this->m_ptcpServer  = m_ptcpServer;
